@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block content %}
+<h3 class="mb-4 text-white"><i class="bi bi-safe2-fill"></i> Secure File Vault</h3>
+
+<div class="row row-cols-1 row-cols-md-3 g-4">
+    {% for item in inbox %}
+    <div class="col">
+        <div class="card h-100 text-center">
+            <div class="card-header bg-transparent border-0 text-end">
+                <span class="badge bg-primary">{{ item.msg.encryption_time_ms|round(0) }} ms</span>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    {% if item.msg.content_type == 'image' %}
+                        <img src="data:image/png;base64,{{ item.decrypted|b64encode }}" class="img-fluid rounded border border-secondary" style="height: 120px; object-fit: cover;">
+                    {% else %}
+                        <i class="bi bi-file-earmark-binary display-1 text-secondary"></i>
+                    {% endif %}
+                </div>
+                <h5 class="text-truncate px-3">{{ item.msg.file_name }}</h5>
+                <p class="small text-muted">Sender: {{ item.sender }}</p>
+                
+                <div class="text-start bg-black p-2 rounded mb-3 border border-dark">
+                    <small class="text-muted d-block" style="font-size: 0.65rem;">ENCRYPTED HEADER:</small>
+                    <code class="hex-code" style="font-size: 0.7rem;">{{ item.msg.encrypted_data|hex_preview }}</code>
+                </div>
+
+                <a href="/download/{{ item.msg.id }}" class="btn btn-outline-info w-100 stretched-link">
+                    <i class="bi bi-download"></i> Decrypt & Save
+                </a>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="col-12 text-center text-muted">Vault is empty.</div>
+    {% endfor %}
+</div>
+{% endblock %}

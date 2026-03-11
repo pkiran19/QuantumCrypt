@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row g-4">
+    <div class="col-lg-8">
+        <div class="glass-card h-100 p-0 overflow-hidden">
+            <div class="p-4 border-bottom border-secondary border-opacity-10 bg-primary bg-opacity-10 d-flex justify-content-between align-items-center">
+                <h5 class="mb-0 fw-bold text-primary"><i class="bi bi-send-fill me-2"></i>Transmission</h5>
+                <div>
+                    <a href="{{ url_for('simulation_page') }}" class="btn btn-sm btn-warning border-secondary rounded-pill me-2">
+                        <i class="bi bi-cpu-fill"></i> <span class="d-none d-md-inline">Quantum Sim</span>
+                    </a>
+                    <button class="btn btn-sm btn-dark border-secondary rounded-pill" data-bs-toggle="modal" data-bs-target="#qrModal">
+                        <i class="bi bi-qr-code"></i> <span class="d-none d-md-inline">Mobile</span>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="p-4">
+                <form method="post" action="/send" enctype="multipart/form-data" id="sendForm" onsubmit="return triggerSendingAnimation('sendForm')">
+                    <div class="row g-3 mb-4">
+                        <div class="col-12 col-md-6">
+                            <label class="form-label small fw-bold text-muted text-uppercase">To</label>
+                            <select name="receiver" class="form-select form-select-lg">
+                                {% for u in users %}
+                                    <option value="{{ u.id }}">{{ u.username }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label class="form-label small fw-bold text-muted text-uppercase">Type</label>
+                            <select name="type" class="form-select form-select-lg" id="msgType" onchange="toggleInput()">
+                                <option value="text">Message</option>
+                                <option value="file">File</option>
+                                <option value="image">Photo</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4" id="textInput">
+                        <textarea name="content" class="form-control" placeholder="Type your secure message..." rows="6" style="resize: none;"></textarea>
+                    </div>
+                    <div class="mb-4 d-none" id="fileInput">
+                        <label class="glass-card w-100 p-5 text-center cursor-pointer border-dashed">
+                            <i class="bi bi-cloud-upload display-4 text-muted mb-3"></i>
+                            <div class="d-block text-muted">Tap to select file</div>
+                            <input type="file" name="file" class="form-control d-none">
+                        </label>
+                    </div>
+
+                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" name="auto_delete" id="autoDel">
+                            <label class="form-check-label text-muted" for="autoDel">Auto-Delete (48h)</label>
+                        </div>
+                        <button class="btn btn-primary btn-xl w-100 w-md-auto fw-bold shadow-lg" type="submit">
+                            Encrypt & Send <i class="bi bi-arrow-right ms-2"></i>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="row g-3">
+            <div class="col-6 col-lg-12">
+                <div class="glass-card p-4 text-center h-100">
+                    <h6 class="text-uppercase text-muted small fw-bold mb-2">Messages</h6>
+                    <h2 class="display-4 fw-bold text-primary mb-0">{{ msg_count }}</h2>
+                </div>
+            </div>
+            <div class="col-6 col-lg-12">
+                <div class="glass-card p-4 text-center h-100">
+                    <h6 class="text-uppercase text-muted small fw-bold mb-2">Files</h6>
+                    <h2 class="display-4 fw-bold text-success mb-0">{{ file_count }}</h2>
+                </div>
+            </div>
+            <div class="col-12">
+                <div class="glass-card p-4 d-flex align-items-center gap-3 border-success border-opacity-25 bg-success bg-opacity-10">
+                    <div class="bg-success rounded-circle p-3 text-white"><i class="bi bi-shield-check-fill h4 mb-0"></i></div>
+                    <div>
+                        <h6 class="mb-0 fw-bold text-success">System Secure</h6>
+                        <small class="text-muted">PQC Keys Active</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="qrModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content glass-card border-0">
+            <div class="modal-body text-center p-5">
+                <img src="/generate_qr" class="img-fluid rounded-3 shadow-sm mb-3" style="max-width: 220px;">
+                <h5 class="fw-bold">Mobile Connection</h5>
+                <p class="text-muted small">Scan to open on this Wi-Fi network.</p>
+                <div class="alert alert-warning small text-start mt-3">
+                    <i class="bi bi-info-circle me-1"></i> For best results, use <strong>Ngrok</strong> to bypass firewall issues.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function toggleInput() {
+  let type = document.getElementById('msgType').value;
+  document.getElementById('textInput').classList.toggle('d-none', type !== 'text');
+  document.getElementById('fileInput').classList.toggle('d-none', type === 'text');
+}
+</script>
+{% endblock %}

@@ -1,0 +1,256 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold text-white"><i class="bi bi-cpu-fill me-2"></i>Quantum Simulation</h2>
+        <a href="{{ url_for('dashboard') }}" class="btn btn-outline-light rounded-pill px-4">
+            <i class="bi bi-arrow-left me-2"></i>Back to Dashboard
+        </a>
+    </div>
+
+    <div class="glass-card p-4 mb-4">
+        <h4 class="text-primary fw-bold mb-3"><i class="bi bi-shield-lock me-2"></i>1. Quantum Key Distribution (BB84)</h4>
+        <p class="text-muted mb-4">Simulating photon polarization (Q-bits) to generate a shared secret key between Alice and Bob. This demonstrates how hardware keys are born.</p>
+        
+        <button id="bb84Btn" class="btn btn-primary rounded-pill mb-4 px-4" onclick="runBB84()">
+            <i class="bi bi-play-fill me-1"></i> Initialize Quantum Channel
+        </button>
+
+        <div class="table-responsive rounded-3 overflow-hidden shadow-sm" id="bb84Container" style="display:none;">
+            <table class="table table-dark table-hover mb-0 text-center align-middle">
+                <thead>
+                    <tr class="text-uppercase small text-muted">
+                        <th>Step</th>
+                        <th>Alice Bit</th>
+                        <th>Alice Basis</th>
+                        <th>Photon</th>
+                        <th>Bob Basis</th>
+                        <th>Status</th>
+                        <th>Result Key</th>
+                    </tr>
+                </thead>
+                <tbody id="bb84Body"></tbody>
+            </table>
+        </div>
+        
+        <div id="finalKeyDisplay" class="alert alert-success mt-3 border-0 d-flex align-items-center gap-3" style="display:none;">
+            <i class="bi bi-key-fill h4 mb-0"></i>
+            <div>
+                <small class="text-uppercase fw-bold">Generated Quantum Key</small><br>
+                <span id="qKey" class="font-monospace fs-5"></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="glass-card p-4">
+        <h4 class="text-danger fw-bold mb-3"><i class="bi bi-shield-slash-fill me-2"></i>2. Quantum Cryptanalysis (Shor's Algorithm)</h4>
+        <p class="text-muted mb-4">Simulating a real-time key exhaustion attack. Watch the system attempt to factor the Public Key integers.</p>
+        
+        <div class="d-flex gap-3 mb-4">
+            <button id="attackBtn" class="btn btn-danger rounded-pill px-4" onclick="startRealAttack()">
+                <i class="bi bi-bug-fill me-1"></i> Start Attack
+            </button>
+            <button class="btn btn-outline-light rounded-pill px-4" onclick="stopAttack()">
+                <i class="bi bi-stop-circle me-1"></i> Stop
+            </button>
+        </div>
+
+        <div class="row g-3 mb-3 text-center">
+            <div class="col-md-4">
+                <div class="bg-dark bg-opacity-50 p-2 rounded border border-secondary border-opacity-25">
+                    <small class="text-muted text-uppercase">Keys Tried</small>
+                    <div id="keysTried" class="font-monospace fs-4 text-white">0</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="bg-dark bg-opacity-50 p-2 rounded border border-secondary border-opacity-25">
+                    <small class="text-muted text-uppercase">Hash Rate</small>
+                    <div id="hashRate" class="font-monospace fs-4 text-info">0 H/s</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="bg-dark bg-opacity-50 p-2 rounded border border-secondary border-opacity-25">
+                    <small class="text-muted text-uppercase">Status</small>
+                    <div id="attackStatus" class="font-monospace fs-4 text-warning">IDLE</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-black p-3 rounded font-monospace small shadow-inner" 
+             style="height: 300px; overflow-y: hidden; border: 1px solid #333; font-family: 'Courier New', Courier, monospace;">
+            
+            <div class="text-secondary opacity-75 mb-2">
+                root@quantum-cracker:~# ./shors_algo --target=RSA-2048 --threads=16<br>
+                > Initializing Quantum Superposition... [OK]<br>
+                > Loading Lattice Reduction for ML-KEM... [FAIL]<br>
+                > Starting Exhaustive Key Search...
+            </div>
+
+            <div id="consoleLog" class="d-flex flex-column justify-content-end" style="height: 200px; color: #0f0;">
+                </div>
+
+            <div class="mt-2 border-top border-secondary pt-2 text-white">
+                <span class="text-danger blink me-2">>> CRACKING:</span> 
+                <span id="currentGuess" class="text-muted">Waiting for command...</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ================= BB84 LOGIC =================
+    async function runBB84() {
+        const btn = document.getElementById('bb84Btn');
+        const container = document.getElementById('bb84Container');
+        const keyDisplay = document.getElementById('finalKeyDisplay');
+        
+        // Reset UI
+        container.style.display = 'none';
+        keyDisplay.style.display = 'none';
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Transmitting Q-bits...';
+        btn.disabled = true;
+
+        try {
+            const response = await fetch('/api/run_bb84', { method: 'POST' });
+            const data = await response.json();
+            
+            const tbody = document.getElementById('bb84Body');
+            tbody.innerHTML = '';
+            
+            // Artificial delay to feel like "Transmission"
+            setTimeout(() => {
+                container.style.display = 'block';
+                keyDisplay.style.display = 'flex';
+
+                data.log.forEach((row, index) => {
+                    const isMatch = row.status === 'MATCH';
+                    const badgeClass = isMatch ? 'bg-success' : 'bg-danger bg-opacity-25 text-danger';
+                    const keyStyle = isMatch ? 'fw-bold text-white' : 'text-muted opacity-25';
+                    
+                    const tr = `<tr>
+                        <td><span class="badge bg-secondary bg-opacity-25 text-light rounded-pill">${row.step}</span></td>
+                        <td>${row.bit}</td>
+                        <td>${row.alice_basis}</td>
+                        <td class="fs-4 text-info">${row.photon}</td>
+                        <td>${row.bob_basis}</td>
+                        <td><span class="badge ${badgeClass}">${row.status}</span></td>
+                        <td class="${keyStyle}">${row.result}</td>
+                    </tr>`;
+                    tbody.innerHTML += tr;
+                });
+
+                document.getElementById('qKey').innerText = data.final_key;
+                
+                btn.innerHTML = '<i class="bi bi-arrow-repeat me-1"></i> Re-Run Simulation';
+                btn.disabled = false;
+            }, 800);
+            
+        } catch (error) {
+            console.error(error);
+            btn.innerHTML = '<i class="bi bi-play-fill me-1"></i> Initialize Quantum Channel';
+            btn.disabled = false;
+        }
+    }
+
+    // ================= REAL ATTACK LOGIC =================
+    let attackInterval;
+    let keysTried = 0;
+    let isRunning = false;
+    const consoleLog = document.getElementById('consoleLog');
+    const currentGuess = document.getElementById('currentGuess');
+    const keysDisplay = document.getElementById('keysTried');
+    const rateDisplay = document.getElementById('hashRate');
+    const statusDisplay = document.getElementById('attackStatus');
+
+    function startRealAttack() {
+        if (isRunning) return;
+        isRunning = true;
+        statusDisplay.innerText = "RUNNING";
+        statusDisplay.className = "font-monospace fs-4 text-danger blink";
+        
+        let startTime = Date.now();
+
+        attackInterval = setInterval(() => {
+            // 1. Generate a random Hex Key (The "Guess")
+            let randomKey = "0x" + Math.floor(Math.random()*16777215).toString(16).toUpperCase().padStart(6, '0') + "...";
+            
+            // 2. Update Metrics
+            keysTried += Math.floor(Math.random() * 150) + 50; 
+            let elapsedTime = (Date.now() - startTime) / 1000;
+            let rate = (keysTried / elapsedTime).toFixed(0);
+
+            // 3. Update UI
+            keysDisplay.innerText = keysTried.toLocaleString();
+            rateDisplay.innerText = rate + " kH/s";
+            currentGuess.innerText = randomKey;
+
+            // 4. Add Log Entry
+            const logEntry = document.createElement('div');
+            logEntry.className = "text-opacity-75";
+            logEntry.style.color = "#00ff00"; // Hacker Green
+            logEntry.innerHTML = `[ATTEMPT] Testing factor: ${randomKey} <span class="text-danger">[FAIL]</span>`;
+            consoleLog.appendChild(logEntry);
+
+            if (consoleLog.children.length > 8) {
+                consoleLog.removeChild(consoleLog.firstChild);
+            }
+
+            // 5. SIMULATE RSA CRACK (After ~5 seconds)
+            if (elapsedTime > 5.0 && elapsedTime < 5.2) {
+                crackRSA();
+            }
+
+        }, 50); 
+    }
+
+    function stopAttack() {
+        clearInterval(attackInterval);
+        isRunning = false;
+        statusDisplay.innerText = "PAUSED";
+        statusDisplay.className = "font-monospace fs-4 text-warning";
+    }
+
+    function crackRSA() {
+        clearInterval(attackInterval);
+        
+        const successMsg = document.createElement('div');
+        successMsg.innerHTML = `
+            <br>
+            <strong class="text-danger bg-white px-2"> >> RSA KEY FOUND << </strong><br>
+            <span>Key: 0x9D2F... (Private Exponent)</span><br>
+            <span>Time: 5.12s</span><br>
+            <span>Method: Shor's Period Finding</span><br>
+            <br>
+            <span class="text-info">>> SWITCHING TARGET TO ML-KEM-768...</span>
+        `;
+        consoleLog.appendChild(successMsg);
+        
+        // Resume attack on ML-KEM (Infinite Loop of Failure)
+        setTimeout(() => {
+            consoleLog.innerHTML = ""; 
+            statusDisplay.innerText = "HARDENED";
+            statusDisplay.className = "font-monospace fs-4 text-success";
+            
+            attackInterval = setInterval(() => {
+                keysTried += 500;
+                keysDisplay.innerText = keysTried.toLocaleString();
+                
+                const logEntry = document.createElement('div');
+                logEntry.style.color = "#ff4444"; 
+                logEntry.innerHTML = `[ML-KEM] Lattice Vector Search: 0x${Math.floor(Math.random()*10000)}... <span class="fw-bold">DENIED</span>`;
+                consoleLog.appendChild(logEntry);
+                
+                if (consoleLog.children.length > 8) consoleLog.removeChild(consoleLog.firstChild);
+                
+                currentGuess.innerText = "Unbreakable Lattice Structure detected...";
+            }, 80);
+        }, 2000);
+    }
+</script>
+
+<style>
+    .blink { animation: blinker 1s linear infinite; }
+    @keyframes blinker { 50% { opacity: 0; } }
+</style>
+{% endblock %}

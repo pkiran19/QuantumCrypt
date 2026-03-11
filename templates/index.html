@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="text-center py-5">
+    <div class="p-5 mb-4 rounded-3 shadow-lg bg-custom-accent position-relative overflow-hidden">
+        
+        <div class="position-absolute top-0 start-0 w-100 h-100" style="background: linear-gradient(45deg, rgba(255,255,255,0.1) 0%, transparent 100%); pointer-events: none;"></div>
+        
+        <h1 class="display-3 fw-bold mb-3 position-relative">Quantum Crypt Transmission (PQC)</h1>
+        <p class="lead mb-4 opacity-75 position-relative">
+            Experience the future of secure communication with cutting-edge Post-Quantum Cryptography. 
+            Share text, files, and images with unbreakable security.
+        </p>
+        
+        <div class="d-flex justify-content-center flex-wrap gap-3 position-relative" style="z-index: 2;">
+            <a href="/register" class="btn btn-light btn-lg px-5 fw-bold text-dark shadow-sm">
+                Get Started
+            </a>
+            <a href="/login" class="btn btn-outline-light btn-lg px-5 fw-bold">
+                Log In
+            </a>
+            <button class="btn btn-warning btn-lg px-4 fw-bold text-dark shadow-sm" data-bs-toggle="modal" data-bs-target="#qrModal">
+                <i class="bi bi-qr-code-scan me-2"></i> Scan for Mobile
+            </button>
+        </div>
+    </div>
+
+    <div class="row g-4 py-4 text-start">
+        <div class="col-md-4">
+            <div class="p-4 rounded card h-100 border-primary shadow-sm">
+                <i class="bi bi-shield-lock-fill display-4 text-primary mb-3"></i>
+                <h3 class="h4">Post-Quantum Security</h3>
+                <p class="text-muted small">Defend against quantum threats with advanced cryptographic algorithms (ML-KEM-768) designed for the next era of computing.</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="p-4 rounded card h-100 border-primary shadow-sm">
+                <i class="bi bi-chat-dots-fill display-4 text-success mb-3"></i>
+                <h3 class="h4">Seamless Sharing</h3>
+                <p class="text-muted small">Effortlessly send encrypted text messages, files, or images to your contacts in a user-friendly interface.</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="p-4 rounded card h-100 border-primary shadow-sm">
+                <i class="bi bi-speedometer2 display-4 text-info mb-3"></i>
+                <h3 class="h4">Lightning Fast</h3>
+                <p class="text-muted small">Enjoy rapid encryption and decryption without compromising on security or performance. Real-time metrics included.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="qrModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content glass-card border-0">
+            <div class="modal-header border-0">
+                <h5 class="modal-title fw-bold text-primary">Mobile Connection</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center p-4">
+                <div class="bg-white p-2 d-inline-block rounded mb-3 border">
+                    <img src="/generate_qr" class="img-fluid" style="max-width: 200px;">
+                </div>
+                <p class="text-muted small">Scan this code with your phone camera to open the application on your mobile device.</p>
+                <div class="alert alert-warning small text-start mt-2">
+                    <i class="bi bi-info-circle me-1"></i> Ensure your phone is connected to the same Wi-Fi network or use <strong>Ngrok</strong>.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

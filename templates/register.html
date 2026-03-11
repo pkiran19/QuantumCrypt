@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="d-flex align-items-center justify-content-center py-5" style="min-height: 80vh;">
+    <div class="card shadow-lg border-0" style="max-width: 500px; width: 100%;">
+        <div class="card-header bg-accent text-center py-4">
+            <h3 class="fw-bold mb-1"><i class="bi bi-person-plus-fill me-2"></i>Create Your Account</h3>
+            <p class="mb-0 opacity-75 small">Join the quantum-secure world today!</p>
+        </div>
+        <div class="card-body p-4">
+            <form method="post">
+                <div class="mb-3"><input class="form-control bg-transparent border-secondary py-2" type="text" name="name" placeholder="Full Name" required></div>
+                <div class="mb-3"><input class="form-control bg-transparent border-secondary py-2" type="email" name="email" placeholder="Email Address" required></div>
+                <div class="mb-3"><input class="form-control bg-transparent border-secondary py-2" type="text" name="username" placeholder="Choose Username" required></div>
+                <div class="mb-3 row g-2">
+                    <div class="col-md-6"><input class="form-control bg-transparent border-secondary py-2" type="password" name="password" placeholder="Create Password" required></div>
+                    <div class="col-md-6"><input class="form-control bg-transparent border-secondary py-2" type="password" name="confirm_password" placeholder="Confirm Password" required></div>
+                </div>
+                
+                <button class="btn btn-lg w-100 fw-bold bg-accent mt-3" type="submit">
+                    <i class="bi bi-check-circle-fill me-2"></i>Register Now
+                </button>
+            </form>
+            <div class="text-center mt-3 small">
+                <span class="text-muted">Already have an account?</span> <a href="/login" class="text-accent text-decoration-none">Sign in here</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

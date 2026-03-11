@@ -1,0 +1,11 @@
+flask
+flask_sqlalchemy
+flask_login
+flask_wtf
+psycopg2-binary
+python-dotenv
+pqcrypto
+werkzeug
+cryptography
+qrcode[pil]
+Flask-APScheduler
